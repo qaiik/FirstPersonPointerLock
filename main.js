@@ -29,6 +29,7 @@ class InputController {
       mouseX: 0,
       mouseY: 0,
     };
+
     this.previous_ = null;
     this.keys_ = {};
     this.previousKeys_ = {};
@@ -40,8 +41,11 @@ class InputController {
   }
 
   onMouseMove_(e) {
-    this.current_.mouseX = e.pageX - window.innerWidth / 2;
-    this.current_.mouseY = e.pageY - window.innerHeight / 2;
+    this.current_.mouseX += e.movementX;
+    this.current_.mouseY += e.movementY;
+
+    this.current_.mouseX = this.current_.mouseX 
+    this.current_.mouseY = this.current_.mouseY
 
     if (this.previous_ === null) {
       this.previous_ = {...this.current_};
@@ -109,7 +113,7 @@ class InputController {
 
 
 class FirstPersonCamera {
-  constructor(camera, objects) {
+  constructor(camera, objects, sensitivity) {
     this.camera_ = camera;
     this.input_ = new InputController();
     this.rotation_ = new THREE.Quaternion();
@@ -121,6 +125,7 @@ class FirstPersonCamera {
     this.headBobActive_ = false;
     this.headBobTimer_ = 0;
     this.objects_ = objects;
+    this.sensitivity_ = sensitivity;
   }
 
   update(timeElapsedS) {
@@ -195,8 +200,8 @@ class FirstPersonCamera {
   }
 
   updateRotation_(timeElapsedS) {
-    const xh = this.input_.current_.mouseXDelta / window.innerWidth;
-    const yh = this.input_.current_.mouseYDelta / window.innerHeight;
+    const xh = this.input_.current_.mouseXDelta / window.innerWidth * this.sensitivity_;
+    const yh = this.input_.current_.mouseYDelta / window.innerHeight * this.sensitivity_;
 
     this.phi_ += -xh * this.phiSpeed_;
     this.theta_ = clamp(this.theta_ + -yh * this.thetaSpeed_, -Math.PI / 3, Math.PI / 3);
@@ -238,7 +243,7 @@ class FirstPersonCameraDemo {
     // this.controls_.lookSpeed = 0.8;
     // this.controls_.movementSpeed = 5;
 
-    this.fpsCamera_ = new FirstPersonCamera(this.camera_, this.objects_);
+    this.fpsCamera_ = new FirstPersonCamera(this.camera_, this.objects_, 0.3);
   }
 
   initializeRenderer_() {
@@ -480,4 +485,10 @@ let _APP = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   _APP = new FirstPersonCameraDemo();
+  console.log(_APP.threejs_.domElement)
+  _APP.threejs_.domElement.addEventListener('click', e => {
+      _APP.threejs_.domElement.requestPointerLock({
+        unadjustedMovement: true
+      })
+  })
 });
